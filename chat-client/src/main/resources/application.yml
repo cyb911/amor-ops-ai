@@ -1,0 +1,17 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: ww-ai
+  ai:
+    openai:
+      base-url: https://api.deepseek.com
+      api-key: sk-230bfda20028442fa97583fe9bbbaf52
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 0.7
+
+vaadin:
+  launch-browser: true

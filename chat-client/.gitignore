@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+package.json
+package-lock.json
+tsconfig.json
+types.d.ts

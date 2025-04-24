@@ -1,6 +1,7 @@
 package com.amor.chatclient.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -10,16 +11,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
-import java.util.Map;
-
 @RestController
 @AllArgsConstructor
 public class ChatController {
     private final OpenAiChatModel chatModel;
 
+    private final ChatClient chatClient;
+
     @GetMapping("/ai/generate")
-    public Map generate(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
-        return Map.of("generation", this.chatModel.call(message));
+    public String generate(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
+        String response = chatClient.prompt(message)
+                .call()
+                .content();
+        return response;
     }
 
     @GetMapping("/ai/generateStream")

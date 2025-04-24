@@ -14,10 +14,8 @@ public class McpController {
 
     @GetMapping("/ai/tool/generate")
     public String toolGenerate(@RequestParam(value = "message") String message) {
-        String response = chatClient.prompt(message)
+        return chatClient.prompt(message)
                 .call()
                 .content();
-        System.out.println("响应结果: " + response);
-        return response;
     }
 }

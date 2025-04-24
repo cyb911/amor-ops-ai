@@ -23,5 +23,6 @@ spring:
           enabled: true
         sse:
           connections:
-            weather:
+            #amor MCP服务
+            amor:
               url: http://localhost:8090

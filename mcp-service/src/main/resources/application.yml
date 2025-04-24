@@ -13,3 +13,6 @@ spring:
         type: sync
         sse-message-endpoint: /mcp/message
         sse-endpoint: /sse
+
+taskflow:
+  auth: Bearer Yv3yxbvQZvkkcokXx9VgbBJ0bR8_r8izgqCgV4fNUz0QjJeU-nK--3j3eRY4n75eeRpi9xWi9rvZRHClF1TtiLZZDHGENsQ5gXXi8ZMuWi8kStubeG9a3wPS77jnx9CY

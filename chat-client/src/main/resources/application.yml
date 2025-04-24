@@ -1,6 +1,9 @@
 server:
   port: 8081
 
+vaadin:
+  launch-browser: true
+
 spring:
   application:
     name: ww-ai
@@ -12,6 +15,13 @@ spring:
         options:
           model: deepseek-chat
           temperature: 0.7
-
-vaadin:
-  launch-browser: true
+    mcp:
+      client:
+        name: ww-mcp-client
+        type: sync
+        toolcallback:
+          enabled: true
+        sse:
+          connections:
+            weather:
+              url: http://localhost:8090

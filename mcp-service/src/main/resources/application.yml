@@ -1,3 +1,15 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: mcp-service
+
+  ai:
+    mcp:
+      server:
+        name: ww-mcp-server
+        version: 1.0.0
+        type: sync
+        sse-message-endpoint: /mcp/message
+        sse-endpoint: /sse

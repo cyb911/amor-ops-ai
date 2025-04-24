@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Service
-public class EmployeeService {
+public class EmployeeService implements ToolService {
     @Tool(description = "根据员工工号获取员工信息")
     public String getSimpleDetailsBatch(@ToolParam(description = "工号") List<String> employeeCodes) {
 

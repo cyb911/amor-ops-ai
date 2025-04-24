@@ -25,6 +25,12 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.9.0</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

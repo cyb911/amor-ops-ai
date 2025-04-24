@@ -1,6 +1,5 @@
 package com.amor.mcpservice.service;
 
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
 import com.amor.mcpservice.query.TaskReq;
@@ -10,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TaskflowService {
+public class TaskflowService implements ToolService {
 
     @Value("${taskflow.auth}")
     private String auth;

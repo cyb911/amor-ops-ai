@@ -6,7 +6,7 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WeatherService {
+public class WeatherService implements ToolService {
     private final String baseUrl = "https://p75cttvkfb.re.qweatherapi.com";
 
     private final String apiKey = "b376bdbec5b64f6ca1398a78772ee918";

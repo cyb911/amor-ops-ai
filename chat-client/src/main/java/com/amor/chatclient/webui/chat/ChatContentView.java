@@ -1,9 +1,12 @@
 package com.amor.chatclient.webui.chat;
 
 
+import com.amor.chatclient.service.chat.ChatHistory;
+import com.amor.chatclient.service.chat.ChatService;
 import com.amor.chatclient.webui.VaadinUtils;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
@@ -18,6 +21,7 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.vaadin.firitin.components.messagelist.MarkdownMessage;
+import reactor.core.publisher.Flux;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -36,8 +40,12 @@ import java.util.regex.Pattern;
 public class ChatContentView  extends VerticalLayout {
     private final VerticalLayout messageListLayout;
     private final TextArea userPromptTextArea;
+    private final ChatService chatService;
+    private ChatHistory chatHistory;
 
-    public ChatContentView() {
+    public ChatContentView(ChatService chatService, ChatHistory chatHistory) {
+        this.chatHistory = chatHistory;
+        this.chatService = chatService;
         this.messageListLayout = new VerticalLayout();
         this.messageListLayout.setMargin(false);
         this.messageListLayout.setSpacing(false);
@@ -73,15 +81,14 @@ public class ChatContentView  extends VerticalLayout {
         getStyle().set("overflow", "hidden").set("display", "flex")
                 .set("flex-direction", "column").set("align-items", "stretch");
 
-//        List<Message> messages = this.chatHistory.getMessagesSupplier().get();
-        List<Message> messages = new ArrayList<>();
+        List<Message> messages = this.chatHistory.getMessagesSupplier().get();
         if (messages.isEmpty())
             return;
-//        ChatContentManager chatContentManager = new ChatContentManager(null, null, zoneIdFuture,
-//                this.chatHistory.getMessagesSupplier());
-//        messages.forEach(
-//                message -> chatContentManager.addMarkdownMessage(this.messageListLayout,
-//                        message, message.getMessageType()));
+        ChatContentManager chatContentManager = new ChatContentManager(null, null, zoneIdFuture,
+                this.chatHistory.getMessagesSupplier());
+        messages.forEach(
+                message -> chatContentManager.addMarkdownMessage(this.messageListLayout,
+                        message, message.getMessageType()));
     }
 
     private void inputEvent(CompletableFuture<ZoneId> zoneIdFuture) {
@@ -90,16 +97,35 @@ public class ChatContentView  extends VerticalLayout {
             return;
         this.userPromptTextArea.setEnabled(false);
         this.userPromptTextArea.clear();
+
+        ChatContentManager chatContentManager = new ChatContentManager(this.messageListLayout, userPrompt, zoneIdFuture,
+                this.chatHistory.getMessagesSupplier());
+        this.messageListLayout.add(chatContentManager.getBotResponse());
+
+        Flux<String> botResponseStream = this.chatService.stream(this.chatHistory, userPrompt,
+                chatContentManager.getStartTimestamp());
+        UI ui = VaadinUtils.getUi(this);
+        botResponseStream.doFinally(signalType -> ui.access(() -> {
+            chatContentManager.doFinally();
+            this.userPromptTextArea.setEnabled(true);
+            this.userPromptTextArea.focus();
+        })).subscribe(content -> ui.access(() -> chatContentManager.append(content)));
     }
 
     public ChatOptions getChatOption() {
-        return null;
+        return this.chatHistory.getChatOptions();
     }
 
-    public String getSystemPrompt() {
-        return null;
+    public String getSystemPrompt() {return this.chatHistory.getSystemPrompt();}
+
+    public void updateChatHistory(ChatHistory updateChatHistory) {
+        if (updateChatHistory.getChatId().equals(getChatId()))
+            this.chatHistory = updateChatHistory;
     }
 
+    public String getChatId() {
+        return this.chatHistory.getChatId();
+    }
 
     private static class ChatContentManager {
         private static final Pattern ThinkPattern = Pattern.compile("<think>(.*?)</think>", Pattern.DOTALL);
@@ -261,6 +287,10 @@ public class ChatContentView  extends VerticalLayout {
 
         private static String getBotThinkResponseName(Long tookMillis) {
             return THINK_PROCESS + String.format(" (%.1f sec)", tookMillis.floatValue() / 1000);
+        }
+
+        public long getStartTimestamp() {
+            return this.startTimestamp;
         }
     }
 }

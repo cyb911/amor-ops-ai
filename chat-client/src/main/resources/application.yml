@@ -7,6 +7,15 @@ vaadin:
 spring:
   application:
     name: ww-ai
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  data:
+    mongodb:
+      uri: mongodb://localhost/amor
+      username: admin
+      password: 123456
   ai:
     openai:
       base-url: https://api.deepseek.com
@@ -15,6 +24,12 @@ spring:
         options:
           model: deepseek-chat
           temperature: 0.7
+    playground:
+      chat:
+        systemPrompt: 你是一位某系统助理，你需要遵循一下规则：1:当用户需要获取系统验证码时，调用获取系统验证码tool时，你的请求tool参数应该时应该是标准的UUID.
+        models:
+          - deepseek-chat
+          - deepseek-reasoner
     mcp:
       client:
         name: ww-mcp-client
@@ -26,3 +41,9 @@ spring:
             #amor MCP服务
             amor:
               url: http://localhost:8090
+
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.ai.chat: DEBUG

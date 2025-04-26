@@ -1,5 +1,9 @@
 package com.amor.chatclient.webui.chat;
 
+import com.amor.chatclient.service.chat.ChatHistory;
+import com.amor.chatclient.service.chat.ChatHistoryService;
+import com.amor.chatclient.service.chat.ChatService;
+import com.amor.chatclient.webui.VaadinUtils;
 import com.amor.chatclient.webui.WwAiAppLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -23,6 +27,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import org.springframework.ai.chat.prompt.ChatOptions;
 
+import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,6 +37,8 @@ import static com.amor.chatclient.webui.VaadinUtils.*;
 @RouteAlias(value = "", layout = WwAiAppLayout.class)
 @Route(value = "chat", layout = WwAiAppLayout.class)
 public class ChatView extends Div {
+    private final ChatService chatService;
+    private final ChatHistoryService chatHistoryService;
     private final ChatHistoryView chatHistoryView;
     private final SplitLayout splitLayout;
     private final VerticalLayout chatContentLayout;
@@ -39,7 +46,7 @@ public class ChatView extends Div {
     private boolean sidebarCollapsed;
     private ChatContentView chatContentView;
 
-    public ChatView() {
+    public ChatView(ChatService chatService, ChatHistoryService chatHistoryService) {
         setSizeFull();
 
         this.splitLayout = new SplitLayout();
@@ -48,7 +55,16 @@ public class ChatView extends Div {
         this.splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
         add(this.splitLayout);
 
-        this.chatHistoryView = new ChatHistoryView();
+        this.chatService = chatService.registerCompleteResponseConsumer(this::handleCompleteResponse);
+        this.chatHistoryService = chatHistoryService;
+        PropertyChangeSupport chatHistoryChangeSupport = this.chatHistoryService.getChatHistoryChangeSupport();
+        chatHistoryChangeSupport.addPropertyChangeListener(ChatHistoryService.CHAT_HISTORY_SELECT_EVENT,
+                event -> this.changeChatContent((ChatHistory) event.getNewValue()));
+        chatHistoryChangeSupport.addPropertyChangeListener(ChatHistoryService.EMPTY_CHAT_HISTORY_EVENT, event -> {
+            if ((boolean) event.getNewValue())
+                this.changeChatContent(null);
+        });
+        this.chatHistoryView = new ChatHistoryView(chatHistoryService);
         this.splitLayout.addToPrimary(chatHistoryView);
         this.chatContentLayout = new VerticalLayout();
         this.chatContentLayout.setSpacing(false);
@@ -91,7 +107,7 @@ public class ChatView extends Div {
         horizontalLayout.add(newChatButton);
 
         H4 chatModelServiceText =
-                new H4(String.format("%s: %s", "未知", chatOptions.getModel()));
+                new H4(String.format("%s: %s", this.chatService.getChatModelServiceName(), chatOptions.getModel()));
         chatModelServiceText.getStyle().set("white-space", "nowrap");
         Div chatModelServiceTextDiv = new Div(chatModelServiceText);
         chatModelServiceTextDiv.getStyle().set("display", "flex").set("justify-content", "center")
@@ -110,7 +126,7 @@ public class ChatView extends Div {
         chatModelSettingPopover.addThemeVariants(PopoverVariant.ARROW, PopoverVariant.LUMO_NO_PADDING);
         chatModelSettingPopover.setPosition(PopoverPosition.BOTTOM);
         chatModelSettingPopover.setModal(true);
-        ChatModelSettingView chatModelSettingView = new ChatModelSettingView(List.of("测试001"),
+        ChatModelSettingView chatModelSettingView = new ChatModelSettingView(this.chatService.getModels(),
                 this.chatContentView.getSystemPrompt(), this.chatContentView.getChatOption());
         chatModelSettingView.getStyle()
                 .set("padding", "0 var(--lumo-space-m) 0 var(--lumo-space-m)");
@@ -135,13 +151,35 @@ public class ChatView extends Div {
         return horizontalLayout;
     }
 
+    private void handleCompleteResponse(ChatHistory chatHistory) {
+        this.chatHistoryService.updateChatHistory(chatHistory);
+    }
 
     private void addNewChatContent() {
-
+        addNewChatContent(this.chatService.getSystemPrompt(), this.chatService.getDefaultOptions());
     }
 
     private void addNewChatContent(String systemPrompt, ChatOptions chatOptions) {
+        this.chatHistoryView.clearSelectHistory();
+        changeChatContent(this.chatHistoryService.createChatHistory(systemPrompt, chatOptions));
+    }
 
+    private void changeChatContent(ChatHistory chatHistory) {
+        if (Objects.isNull(chatHistory)) {
+            chatHistory = this.chatHistoryService.createChatHistory(this.chatService.getSystemPrompt(),
+                    this.chatService.getDefaultOptions());
+        }
+        if (Objects.nonNull(this.chatContentView) &&
+                chatHistory.getChatId().equals(this.chatContentView.getChatId())) {
+            this.chatContentView.updateChatHistory(chatHistory);
+            return;
+        }
+        this.chatContentView = new ChatContentView(this.chatService, chatHistory);
+        ChatOptions chatOptions = chatHistory.getChatOptions();
+        VaadinUtils.getUi(this).access(() -> {
+            this.chatContentLayout.removeAll();
+            this.chatContentLayout.add(createChatContentHeader(chatOptions), this.chatContentView);
+        });
     }
 
 }

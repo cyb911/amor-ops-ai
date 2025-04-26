@@ -1,6 +1,7 @@
 package com.amor.chatclient.webui;
 
 import com.amor.chatclient.webui.chat.ChatView;
+import com.amor.chatclient.webui.vectorstore.VectorStoreView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -32,7 +33,7 @@ public class WwAiAppLayout  extends AppLayout {
         Tabs tabs = new Tabs();
         addToNavbar(titleLayout, tabs);
 
-        this.tabContents = Map.of("大模型", ChatView.class);
+        this.tabContents = Map.of("大模型", ChatView.class,"矢量数据库", VectorStoreView.class);
         tabs.add(new Tab("大模型"));
         tabs.add(new Tab("矢量数据库"));
         tabs.addSelectedChangeListener(

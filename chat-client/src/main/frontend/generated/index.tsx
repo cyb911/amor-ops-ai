@@ -12,11 +12,11 @@
 
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router';
+import { RouterProvider } from 'react-router-dom';
 import { router } from 'Frontend/generated/routes.js';
 
 function App() {
-    return <RouterProvider router={router} />;
+    return <RouterProvider router={router} future={{ v7_startTransition: true }} />;
 }
 
 const outlet = document.getElementById('outlet')!;

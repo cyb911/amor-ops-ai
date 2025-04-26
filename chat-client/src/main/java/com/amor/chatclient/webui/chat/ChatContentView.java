@@ -68,7 +68,7 @@ public class ChatContentView  extends VerticalLayout {
                 inputEvent(zoneIdFuture);
         });
 
-        Button submitButton = new Button("Submit");
+        Button submitButton = new Button("发送");
         submitButton.addClickListener(buttonClickEvent -> inputEvent(zoneIdFuture));
         this.userPromptTextArea.setSuffixComponent(submitButton);
 
@@ -82,8 +82,10 @@ public class ChatContentView  extends VerticalLayout {
                 .set("flex-direction", "column").set("align-items", "stretch");
 
         List<Message> messages = this.chatHistory.getMessagesSupplier().get();
-        if (messages.isEmpty())
+        if (messages.isEmpty()) {
             return;
+        }
+
         ChatContentManager chatContentManager = new ChatContentManager(null, null, zoneIdFuture,
                 this.chatHistory.getMessagesSupplier());
         messages.forEach(
@@ -93,8 +95,9 @@ public class ChatContentView  extends VerticalLayout {
 
     private void inputEvent(CompletableFuture<ZoneId> zoneIdFuture) {
         String userPrompt = this.userPromptTextArea.getValue();
-        if (userPrompt.isBlank())
+        if (userPrompt.isBlank()) {
             return;
+        }
         this.userPromptTextArea.setEnabled(false);
         this.userPromptTextArea.clear();
 
@@ -235,10 +238,12 @@ public class ChatContentView  extends VerticalLayout {
             if (this.isThinking && Strings.isBlank(content) && Objects.isNull(this.botThinkResponse))
                 return;
 
+            System.err.println("真正进入了append，内容是：" + content);
             getBotResponse().appendMarkdown(content);
 
-            if (!this.isThinking && this.isFirstAssistantResponse)
+            if (!this.isThinking && this.isFirstAssistantResponse) {
                 initBotResponse(System.currentTimeMillis());
+            }
         }
 
         private MarkdownMessage getBotResponse() {

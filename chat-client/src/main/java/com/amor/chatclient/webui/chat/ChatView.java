@@ -18,6 +18,7 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.popover.Popover;
 import com.vaadin.flow.component.popover.PopoverPosition;
 import com.vaadin.flow.component.popover.PopoverVariant;
@@ -103,7 +104,7 @@ public class ChatView extends Div {
         });
         horizontalLayout.add(toggleButton);
 
-        Button newChatButton = styledButton("New Chat", VaadinIcon.CHAT.create(), event -> addNewChatContent());
+        Button newChatButton = styledButton("新聊天", VaadinIcon.CHAT.create(), event -> addNewChatContent());
         horizontalLayout.add(newChatButton);
 
         H4 chatModelServiceText =

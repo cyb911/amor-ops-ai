@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,10 +29,6 @@ const router = {
     }
 };
 
-const flowReact : { active: boolean } = {
-    active: false,
-}
-
 // ClickHandler for vaadin-router-go event is copied from vaadin/router click.js
 // @ts-ignore
 function getAnchorOrigin(anchor) {
@@ -59,7 +55,7 @@ function normalizeURL(url: URL): void | string {
     return '/' + url.href.slice(document.baseURI.length);
 }
 
-function extractURL(event: MouseEvent): void | URL {
+function extractPath(event: MouseEvent): void | string {
     // ignore the click if the default action is prevented
     if (event.defaultPrevented) {
         return;
@@ -135,44 +131,8 @@ function extractURL(event: MouseEvent): void | URL {
         return;
     }
 
-    return new URL(anchor.href, anchor.baseURI);
+    return normalizeURL(new URL(anchor.href, anchor.baseURI));
 }
-
-function extractPath(event: MouseEvent): void | string {
-    const url = extractURL(event);
-    if (!url) {
-        return;
-    }
-    return normalizeURL(url);
-}
-
-export const registerGlobalClickHandler = () => {
-    window.addEventListener('click', (event: MouseEvent) => {
-        if (flowReact.active) {
-            return;
-        }
-        const url = extractURL(event);
-        if (!url) {
-            return;
-        }
-        // ignore click if baseURI does not match the document (external)
-        if (!url.href.startsWith(document.baseURI)) {
-            return;
-        }
-        if (event && event.preventDefault) {
-            event.preventDefault();
-        }
-
-        // Normalize path against baseURI
-        const path = url.pathname + url.search + url.hash;
-        const state = {...window.history.state}
-        if (state.idx !== undefined) {
-            state.idx = state.idx + 1;
-        }
-        window.history.pushState(state, '', path);
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    }, { capture: false });
-};
 
 /**
  * Fire 'vaadin-navigated' event to inform components of navigation.
@@ -392,6 +352,7 @@ function Flow() {
             if (event && event.preventDefault) {
                 event.preventDefault();
             }
+
             navigated.current = false;
             // When navigation is triggered by click on a link, fromAnchor is set to true
             // in order to get a server round-trip even when navigating to the same URL again
@@ -456,15 +417,10 @@ function Flow() {
     }, [vaadinRouterGoEventHandler, vaadinNavigateEventHandler]);
 
     useEffect(() => {
-        window.addEventListener('click', navigateEventHandler);
-        flowReact.active = true;
-
         return () => {
             containerRef.current?.parentNode?.removeChild(containerRef.current);
             containerRef.current?.removeEventListener('flow-portal-add', addPortalEventHandler as EventListener);
             containerRef.current = undefined;
-            window.removeEventListener('click', navigateEventHandler);
-            flowReact.active = false;
         };
     }, []);
 
@@ -577,6 +533,7 @@ function Flow() {
                 if (outlet && outlet !== container.parentNode) {
                     outlet.append(container);
                     container.addEventListener('flow-portal-add', addPortalEventHandler as EventListener);
+                    window.addEventListener('click', navigateEventHandler);
                     containerRef.current = container;
                 }
                 return container.onBeforeEnter?.call(

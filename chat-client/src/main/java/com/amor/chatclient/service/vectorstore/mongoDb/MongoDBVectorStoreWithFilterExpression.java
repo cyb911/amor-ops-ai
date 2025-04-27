@@ -1,4 +1,4 @@
-package com.amor.chatclient.service.vectorstore.inmemory;
+package com.amor.chatclient.service.vectorstore.mongoDb;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

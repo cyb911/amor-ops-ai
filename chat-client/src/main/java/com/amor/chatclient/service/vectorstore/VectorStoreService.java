@@ -8,8 +8,7 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.EmbeddingOptionsBuilder;
 import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.observation.AbstractObservationVectorStore;
+import org.springframework.ai.vectorstore.mongodb.atlas.MongoDBAtlasVectorStore;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -37,16 +36,16 @@ public class VectorStoreService {
     private final ApplicationContext applicationContext;
 
     public static final SearchRequestOption ALL_SEARCH_REQUEST_OPTION =
-            new SearchRequestOption(SIMILARITY_THRESHOLD_ACCEPT_ALL, 10000);
+            new SearchRequestOption(SIMILARITY_THRESHOLD_ACCEPT_ALL, 200);
     private final AbstractEmbeddingModel embeddingModel;
-    private final AbstractObservationVectorStore vectorStore;
+    private final MongoDBAtlasVectorStore vectorStore;
     private SearchRequestOption searchRequestOption;
     private EmbeddingOptions embeddingOptions;
 
-    public VectorStoreService(EmbeddingModel embeddingModel, VectorStore vectorStore,
+    public VectorStoreService(EmbeddingModel embeddingModel, MongoDBAtlasVectorStore vectorStore,
             @Lazy ApplicationContext applicationContext) {
         this.embeddingModel = (AbstractEmbeddingModel) embeddingModel;
-        this.vectorStore = (AbstractObservationVectorStore) vectorStore;
+        this.vectorStore = vectorStore;
         this.searchRequestOption = new SearchRequestOption(0.6, DEFAULT_TOP_K);
         this.applicationContext = applicationContext;
     }
@@ -71,7 +70,8 @@ public class VectorStoreService {
     }
 
     public Collection<Document> search(SearchRequest searchRequest) {
-        return this.vectorStore.doSimilaritySearch(searchRequest);
+        List<Document> documents = this.vectorStore.doSimilaritySearch(searchRequest);
+        return documents;
     }
 
     public Document add(Document document) {

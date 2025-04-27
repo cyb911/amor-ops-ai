@@ -30,11 +30,19 @@ import java.util.function.Supplier;
 
 import static com.amor.chatclient.service.vectorstore.VectorStoreDocumentService.*;
 
+/**
+ * 文件管理视图类，用于展示和管理向量存储中的文档信息。
+ */
 public class VectorStoreDocumentView extends VerticalLayout {
 
     private final VectorStoreDocumentService vectorStoreDocumentService;
     private final MultiSelectListBox<VectorStoreDocumentInfo> documentListBox;
 
+    /**
+     * 构造函数，初始化文档视图。
+     *
+     * @param vectorStoreDocumentService 文档服务类实例
+     */
     public VectorStoreDocumentView(VectorStoreDocumentService vectorStoreDocumentService) {
         setHeightFull();
         setSpacing(false);
@@ -56,6 +64,7 @@ public class VectorStoreDocumentView extends VerticalLayout {
             title.getStyle().set("white-space", "nowrap");
             return title;
         }));
+        // 设置列表项的渲染器，显示文档标题和创建时间
         this.documentListBox.addValueChangeListener(event -> Optional.ofNullable(event.getValue())
                 .filter(vectorStoreDocumentInfos -> this.documentListBox.getSelectedItems()
                         .equals(vectorStoreDocumentInfos))
@@ -65,7 +74,7 @@ public class VectorStoreDocumentView extends VerticalLayout {
     }
 
     private Header initDocumentViewHeader() {
-        Span appName = new Span("Document");
+        Span appName = new Span("文件");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
 
         MenuBar menuBar = new MenuBar();

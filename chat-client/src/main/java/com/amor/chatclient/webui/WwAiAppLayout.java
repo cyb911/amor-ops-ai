@@ -29,7 +29,7 @@ public class WwAiAppLayout  extends AppLayout {
         springImg.getStyle().set("width", "var(--lumo-icon-size-m)").set("height", "var(--lumo-icon-size-m)");
         Div springImgDiv = new Div(springImg);
         springImgDiv.getStyle().set("display", "flex").set("justify-content", "center").set("align-items", "center");
-        titleLayout.add(springImgDiv, new H3("网文智慧体"));
+        titleLayout.add(springImgDiv, new H3("AMOR 智能运维平台"));
         Tabs tabs = new Tabs();
         addToNavbar(titleLayout, tabs);
 

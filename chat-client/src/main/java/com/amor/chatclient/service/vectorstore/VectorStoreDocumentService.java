@@ -2,6 +2,7 @@ package com.amor.chatclient.service.vectorstore;
 
 import com.amor.chatclient.webui.vectorstore.VectorStoreView;
 import com.vaadin.flow.component.notification.Notification;
+import lombok.Getter;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.DocumentReader;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
@@ -46,20 +47,17 @@ public class VectorStoreDocumentService {
     private final TokenTextSplitter defaultTokenTextSplitter;
     private final Map<String, VectorStoreDocumentInfo> documentInfos = new ConcurrentHashMap<>();
 
+    @Getter
     private final PropertyChangeSupport documentInfoChangeSupport;
 
     public VectorStoreDocumentService(@Value("${spring.servlet.multipart.max-file-size}") DataSize maxUploadSize) {
-        this.uploadDir = new File(System.getProperty("user.home"), "spring-ai-playground/vectorstore");
+        this.uploadDir = new File(System.getProperty("user.home"), "amor/vectorstore");
         if (!uploadDir.exists())
             uploadDir.mkdirs();
         this.maxUploadSize = maxUploadSize;
         this.splitters = new WeakHashMap<>();
         this.defaultTokenTextSplitter = newTokenTextSplitter(DEFAULT_TOKEN_TEXT_SPLIT_INFO);
         this.documentInfoChangeSupport = new PropertyChangeSupport(this);
-    }
-
-    public PropertyChangeSupport getDocumentInfoChangeSupport() {
-        return this.documentInfoChangeSupport;
     }
 
     public VectorStoreDocumentInfo putNewDocument(String documentFileName, List<Document> uploadedDocumentItems) {

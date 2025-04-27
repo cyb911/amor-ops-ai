@@ -1,4 +1,4 @@
-package com.amor.chatclient.service.vectorstore.inmemory;
+package com.amor.chatclient.service.vectorstore.mongoDb;
 
 
 import org.springframework.ai.vectorstore.filter.Filter;

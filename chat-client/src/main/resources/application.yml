@@ -13,13 +13,11 @@ spring:
       max-request-size: 20MB
   data:
     mongodb:
-      uri: mongodb://localhost/amor
-      username: admin
-      password: 123456
+      uri: mongodb://amor:123456@localhost:27017/amor
   ai:
     openai:
       base-url: https://api.deepseek.com
-      api-key: sk-230bfda20028442fa97583fe9bbbaf52
+      api-key: sk-c65e753a45d140f991a80f42c2929b01
       chat:
         options:
           model: deepseek-chat

@@ -55,7 +55,7 @@ public class ChatContentView  extends VerticalLayout {
         messageScroller.setSizeFull();
 
         this.userPromptTextArea = new TextArea();
-        this.userPromptTextArea.setPlaceholder("Ask Spring AI");
+        this.userPromptTextArea.setPlaceholder("请输入内容");
         this.userPromptTextArea.setWidthFull();
         this.userPromptTextArea.setAutofocus(true);
         this.userPromptTextArea.focus();
@@ -108,6 +108,7 @@ public class ChatContentView  extends VerticalLayout {
         Flux<String> botResponseStream = this.chatService.stream(this.chatHistory, userPrompt,
                 chatContentManager.getStartTimestamp());
         UI ui = VaadinUtils.getUi(this);
+        //更新UI界面
         botResponseStream.doFinally(signalType -> ui.access(() -> {
             chatContentManager.doFinally();
             this.userPromptTextArea.setEnabled(true);
@@ -184,6 +185,13 @@ public class ChatContentView  extends VerticalLayout {
             messageListLayout.add(buildMarkdownMessage(text, messageType, responseTimestamp));
         }
 
+        /**
+         * 构建消息项
+         * @param message 内容
+         * @param messageType 消息类型
+         * @param epochMillis epochMillis
+         * @return MarkdownMessage
+         */
         private MarkdownMessage buildMarkdownMessage(String message, MessageType messageType, long epochMillis) {
             MarkdownMessage markdownMessage =
                     buildMarkdownMessage(message, messageType.getValue().toUpperCase(), epochMillis);
@@ -237,8 +245,6 @@ public class ChatContentView  extends VerticalLayout {
             }
             if (this.isThinking && Strings.isBlank(content) && Objects.isNull(this.botThinkResponse))
                 return;
-
-            System.err.println("真正进入了append，内容是：" + content);
             getBotResponse().appendMarkdown(content);
 
             if (!this.isThinking && this.isFirstAssistantResponse) {

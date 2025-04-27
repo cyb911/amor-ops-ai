@@ -17,9 +17,10 @@ public class ChatHistory {
     private final ChatOptions chatOptions;
     private final Supplier<List<Message>> messagesSupplier;
 
-    public ChatHistory(String chatId, long createTimestamp, long updateTimestamp, String systemPrompt,
+    public ChatHistory(String chatId,String title, long createTimestamp, long updateTimestamp, String systemPrompt,
             ChatOptions chatOptions, Supplier<List<Message>> messagesSupplier) {
         this.chatId = chatId;
+        this.title = title;
         this.createTimestamp = createTimestamp;
         this.updateTimestamp = updateTimestamp;
         this.systemPrompt = systemPrompt;

@@ -12,6 +12,9 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 模型设置界面
+ */
 public class ChatModelSettingView extends VerticalLayout {
     private final TextArea systemPromptTextArea;
     private final ComboBox<String> modelComboBox;

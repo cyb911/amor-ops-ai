@@ -45,7 +45,7 @@ public class WeatherService implements ToolService {
 
     @Tool(description = "提供全球城市未来24-168小时逐小时天气预报，包括：温度、天气状况、风力、风速、风向、相对湿度、大气压强、降水概率、露点温度、云量。")
     public Result weather24h72h168h(@ToolParam(description = "查询未来天气类型：24h,72h,168h") String type,
-                                    @ToolParam(description = "查询地区的名称，支持文字、以英文逗号分隔的经度,纬度坐标（十进制，最多支持小数点后两位）、LocationID或Adcode（仅限中国城市）") String location) {
+                                    @ToolParam(description = "LocationID") String location) {
         try {
             if("24h".equals(type)){
                 Result result = weatherFeign.weather24(location,null,null);

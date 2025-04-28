@@ -2,6 +2,7 @@ package com.amor.chatclient.service.chat;
 
 
 import com.amor.chatclient.WwAiOptions;
+import lombok.Getter;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -34,7 +35,9 @@ import static com.amor.chatclient.service.chat.ChatHistory.TIMESTAMP;
 public class ChatService {
 
     private final List<Advisor> advisors;
+    @Getter
     private final String systemPrompt;
+    @Getter
     private final List<String> models;
     private final ChatModel chatModel;
     private final ChatOptions chatOptions;
@@ -133,14 +136,6 @@ public class ChatService {
 
     public ChatOptions getDefaultOptions() {
         return this.chatOptions;
-    }
-
-    public String getSystemPrompt() {
-        return systemPrompt;
-    }
-
-    public List<String> getModels() {
-        return models;
     }
 
     public String getChatModelServiceName() {

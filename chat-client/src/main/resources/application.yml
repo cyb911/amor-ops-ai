@@ -13,7 +13,7 @@ spring:
       max-request-size: 20MB
   data:
     mongodb:
-      uri: mongodb+srv://yunbin110:mcBLeMJItNYXS3Yk@cluster0.azmpwbe.mongodb.net/amor?retryWrites=true&w=majority&appName=Cluster0
+      uri: mongodb+srv://yunbin110:${MONGO_DB_PASS}@cluster0.azmpwbe.mongodb.net/amor?retryWrites=true&w=majority&appName=Cluster0
   ai:
     openai:
       base-url: https://api.deepseek.com

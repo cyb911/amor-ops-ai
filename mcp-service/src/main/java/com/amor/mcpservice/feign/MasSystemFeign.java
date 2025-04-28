@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name = "masSystemService", url = "https://mas.minthgroup.com/api",
+@FeignClient(name = "masSystemFeign", url = "https://mas.minthgroup.com/api",
         configuration = {MasFeignConfig.class})
 public interface MasSystemFeign {
     @GetMapping("/dap/base/common/user/search")

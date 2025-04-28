@@ -24,7 +24,7 @@ spring:
           temperature: 0.7
       embedding:
         base-url: https://dashscope.aliyuncs.com/compatible-mode
-        api-key: sk-f4ab60d3f5514844b8fb7d3b44322a0d
+        api-key: ${EMBADDING_API_KEY}
         options:
           model: text-embedding-v3
           dimensions: 1024

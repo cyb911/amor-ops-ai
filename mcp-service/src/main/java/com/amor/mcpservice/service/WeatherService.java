@@ -1,6 +1,7 @@
 package com.amor.mcpservice.service;
 
 import cn.hutool.http.HttpRequest;
+import com.amor.mcpservice.dto.weather.GeoResult;
 import com.amor.mcpservice.dto.weather.Result;
 import com.amor.mcpservice.feign.WeatherFeign;
 import lombok.RequiredArgsConstructor;
@@ -33,23 +34,18 @@ public class WeatherService implements ToolService {
     }
 
     @Tool(description = "城市搜索、位置信息搜索")
-    public String lookUpCity(@ToolParam(description = "查询地区的名称，支持文字、以英文逗号分隔的经度,纬度坐标（十进制，最多支持小数点后两位）、LocationID或Adcode（仅限中国城市）") String location) {
-        String urlString = baseUrl + "/geo/v2/city/lookup?location=" + location + "&key=" + apiKey;
+    public GeoResult lookUpCity(@ToolParam(description = "查询地区的名称，支持文字、以英文逗号分隔的经度,纬度坐标（十进制，最多支持小数点后两位）、LocationID或Adcode（仅限中国城市）") String location) {
         try {
-            String result= HttpRequest.get(urlString)
-                    .timeout(-1)
-                    .execute().body();
-            System.err.println(result);
-            return result;
+            return weatherFeign.lookup(location);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "无法获取数据！";
+        return null;
     }
 
-    @Tool(description = "逐小时天气预报API，提供全球城市未来24-168小时逐小时天气预报，包括：温度、天气状况、风力、风速、风向、相对湿度、大气压强、降水概率、露点温度、云量。")
+    @Tool(description = "提供全球城市未来24-168小时逐小时天气预报，包括：温度、天气状况、风力、风速、风向、相对湿度、大气压强、降水概率、露点温度、云量。")
     public Result weather24h72h168h(@ToolParam(description = "查询未来天气类型：24h,72h,168h") String type,
-                                    @ToolParam(description = "需要查询地区的LocationID或以英文逗号分隔的经度,纬度坐标（十进制，最多支持小数点后两位）") String location) {
+                                    @ToolParam(description = "查询地区的名称，支持文字、以英文逗号分隔的经度,纬度坐标（十进制，最多支持小数点后两位）、LocationID或Adcode（仅限中国城市）") String location) {
         try {
             if("24h".equals(type)){
                 Result result = weatherFeign.weather24(location,null,null);

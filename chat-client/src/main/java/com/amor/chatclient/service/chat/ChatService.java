@@ -6,6 +6,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AbstractMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -17,6 +18,8 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.SignalType;
@@ -42,8 +45,11 @@ public class ChatService {
     //MCP 协议tool
     private final ToolCallbackProvider tools;
 
+    private final VectorStore vectorStore;
+
     public ChatService(ChatModel chatModel, ChatClient.Builder chatClientBuilder,
-                       WwAiOptions wwAiOptions, List<Advisor> advisors, ChatMemory chatMemory, ToolCallbackProvider tools) {
+                       WwAiOptions wwAiOptions, List<Advisor> advisors, ChatMemory chatMemory,
+                       ToolCallbackProvider tools,VectorStore vectorStore) {
         this.systemPrompt = wwAiOptions.chat().systemPrompt();
         this.models = wwAiOptions.chat().models();
         this.chatModel = chatModel;
@@ -55,6 +61,7 @@ public class ChatService {
         this.chatClientCache = new WeakHashMap<>();
         this.completeResponseConsumers = new ArrayList<>();
         this.tools = tools;
+        this.vectorStore = vectorStore;
     }
 
     public ChatService registerCompleteResponseConsumer(Consumer<ChatHistory> completeResponseConsumer) {
@@ -72,10 +79,13 @@ public class ChatService {
             List<Advisor> advisors = new ArrayList<>(this.advisors);
             MessageChatMemoryAdvisor messageChatMemoryAdvisor = new MessageChatMemoryAdvisor(this.chatMemory, id,
                     AbstractChatMemoryAdvisor.DEFAULT_CHAT_MEMORY_RESPONSE_SIZE);
-            if (advisors.isEmpty())
+            if (advisors.isEmpty()) {
                 advisors.add(messageChatMemoryAdvisor);
-            else
+            } else {
                 advisors.set(0, messageChatMemoryAdvisor);
+            }
+            advisors.add(new QuestionAnswerAdvisor(vectorStore, SearchRequest.builder()
+                    .similarityThreshold(0.7).topK(2).build()));
             ChatClient.Builder chatClientBuilder =
                     this.chatClientBuilder.clone().defaultTools(tools)
                             .defaultAdvisors(advisors)

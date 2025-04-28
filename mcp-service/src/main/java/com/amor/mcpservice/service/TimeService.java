@@ -32,7 +32,7 @@ public class TimeService implements ToolService {
         timeInfo.computeDetails();
         Instant ntpInstant = Instant.ofEpochMilli(timeInfo.getMessage().getTransmitTimeStamp().getTime());
 
-        ZoneId zoneId = timezone != null ? ZoneId.of(timezone) : ZoneOffset.UTC;
+        ZoneId zoneId = timezone != null ? ZoneId.of(timezone) : ZoneId.of("Asia/Shanghai");
         return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(zoneId)
                 .format(ntpInstant);

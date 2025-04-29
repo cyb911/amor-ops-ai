@@ -17,4 +17,4 @@ spring:
         sse-endpoint: /sse
 
 taskflow:
-  auth: Bearer Yv3yxbvQZvkkcokXx9VgbBJ0bR8_r8izgqCgV4fNUz0QjJeU-nK--3j3eRY4n75eeRpi9xWi9rvZRHClF1TtiLZZDHGENsQ5gXXi8ZMuWi8kStubeG9a3wPS77jnx9CY
+  auth: Bearer bcDdKSQri6elHgB--rGLNHh8B2ivw-J-ZJLwDPZxGMoQEeTUSUQmDwcWKjr_bWzeH3N_pqHkvCzlCNlPKMaB67wOIuSpaDb3nKDJusS2vi_3Tdq5cKJarcLokl2t2-XX

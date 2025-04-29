@@ -88,7 +88,7 @@ public class ChatService {
                 advisors.set(0, messageChatMemoryAdvisor);
             }
             advisors.add(new QuestionAnswerAdvisor(vectorStore, SearchRequest.builder()
-                    .similarityThreshold(0.7).topK(2).build()));
+                    .similarityThreshold(0.8).topK(2).build()));
             ChatClient.Builder chatClientBuilder =
                     this.chatClientBuilder.clone().defaultTools(tools)
                             .defaultAdvisors(advisors)

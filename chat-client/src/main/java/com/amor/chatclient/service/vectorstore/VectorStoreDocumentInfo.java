@@ -1,20 +1,38 @@
 package com.amor.chatclient.service.vectorstore;
 
-import org.springframework.ai.document.Document;
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-import java.util.function.Supplier;
+@Document(collection = "vector_store_documents")
+@Data
+public class VectorStoreDocumentInfo {
 
-public record VectorStoreDocumentInfo(String docInfoId, String title, long createTimestamp, long updateTimestamp,
-                                      String documentPath, Supplier<List<Document>> documentListSupplier) {
+    @Id
+    private String docInfoId;
+
+    private String title;
+    private long createTimestamp;
+    private long updateTimestamp;
+    private String documentPath;
+
+    public VectorStoreDocumentInfo() {
+        // MongoDB 需要无参构造器
+    }
+
+    public VectorStoreDocumentInfo(String docInfoId, String title, long createTimestamp, long updateTimestamp, String documentPath) {
+        this.docInfoId = docInfoId;
+        this.title = title;
+        this.createTimestamp = createTimestamp;
+        this.updateTimestamp = updateTimestamp;
+        this.documentPath = documentPath;
+    }
 
     public VectorStoreDocumentInfo newTitle(String newTitle) {
-        return new VectorStoreDocumentInfo(docInfoId, newTitle, createTimestamp, System.currentTimeMillis(),
-                documentPath, documentListSupplier);
+        return new VectorStoreDocumentInfo(docInfoId, newTitle, createTimestamp, System.currentTimeMillis(), documentPath);
     }
 
     public VectorStoreDocumentInfo newUpdateTimestamp() {
-        return new VectorStoreDocumentInfo(docInfoId, title, createTimestamp, System.currentTimeMillis(), documentPath,
-                documentListSupplier);
+        return new VectorStoreDocumentInfo(docInfoId, title, createTimestamp, System.currentTimeMillis(), documentPath);
     }
 }

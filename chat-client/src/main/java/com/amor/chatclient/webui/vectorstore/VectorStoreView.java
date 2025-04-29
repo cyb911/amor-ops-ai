@@ -98,20 +98,27 @@ public class VectorStoreView extends Div {
 
     private void handleDocumentAdding(List<VectorStoreDocumentInfo> newEventDocumentInfos) {
         this.vectorStoreService.add(
-                newEventDocumentInfos.stream().map(VectorStoreDocumentInfo::documentListSupplier).map(Supplier::get)
+                newEventDocumentInfos.stream()
+                        .map(docInfo -> vectorStoreDocumentService.getDocumentSupplier(docInfo.getDocInfoId()))
+                        .map(Supplier::get)
                         .flatMap(List::stream).toList());
         handleDocumentSelecting(newEventDocumentInfos);
     }
 
     private void handleDocumentSelecting(Collection<VectorStoreDocumentInfo> newEventDocumentInfos) {
         this.vectorStoreContentView.showDocuments(
-                newEventDocumentInfos.stream().map(VectorStoreDocumentInfo::docInfoId).toList());
+                newEventDocumentInfos.stream().map(VectorStoreDocumentInfo::getDocInfoId).toList());
     }
 
     private void handleDocumentDeleting(Collection<VectorStoreDocumentInfo> newEventDocumentInfos) {
         this.vectorStoreService.delete(
-                newEventDocumentInfos.stream().map(VectorStoreDocumentInfo::documentListSupplier).map(Supplier::get)
-                        .flatMap(List::stream).map(Document::getId).toList());
+                newEventDocumentInfos.stream()
+                        .map(docInfo -> vectorStoreDocumentService.getDocumentSupplier(docInfo.getDocInfoId()))
+                        .filter(Objects::nonNull)
+                        .map(Supplier::get)
+                        .flatMap(List::stream)
+                        .map(Document::getId)
+                        .toList());
         vectorStoreContentView.showAllDocuments();
     }
 

@@ -1,5 +1,6 @@
 package com.amor.chatclient.service.vectorstore;
 
+import com.amor.chatclient.repository.VectorStoreDocumentInfoRepository;
 import com.amor.chatclient.webui.vectorstore.VectorStoreView;
 import com.vaadin.flow.component.notification.Notification;
 import lombok.Getter;
@@ -22,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,6 +34,8 @@ public class VectorStoreDocumentService {
     public static final String DOCUMENT_ADDING_EVENT = "DOCUMENT_ADDING_EVENT";
     public static final String DOCUMENTS_DELETE_EVENT = "DOCUMENTS_DELETE_EVENT";
 
+    private final Map<String, Supplier<List<Document>>> documentSuppliers = new ConcurrentHashMap<>();
+
     public record TokenTextSplitInfo(int chunkSize, int minChunkSizeChars, int minChunkLengthToEmbed,
                                      int maxNumChunks, boolean keepSeparator) {}
 
@@ -41,6 +45,7 @@ public class VectorStoreDocumentService {
 
     private final File uploadDir;
 
+    @Getter
     private final DataSize maxUploadSize;
 
     private final Map<String, TokenTextSplitter> splitters;
@@ -50,7 +55,10 @@ public class VectorStoreDocumentService {
     @Getter
     private final PropertyChangeSupport documentInfoChangeSupport;
 
-    public VectorStoreDocumentService(@Value("${spring.servlet.multipart.max-file-size}") DataSize maxUploadSize) {
+    private final VectorStoreDocumentInfoRepository documentInfoRepository;
+
+    public VectorStoreDocumentService(VectorStoreDocumentInfoRepository documentInfoRepository, @Value("${spring.servlet.multipart.max-file-size}") DataSize maxUploadSize) {
+        this.documentInfoRepository = documentInfoRepository;
         this.uploadDir = new File(System.getProperty("user.home"), "amor/vectorstore");
         if (!uploadDir.exists())
             uploadDir.mkdirs();
@@ -58,6 +66,11 @@ public class VectorStoreDocumentService {
         this.splitters = new WeakHashMap<>();
         this.defaultTokenTextSplitter = newTokenTextSplitter(DEFAULT_TOKEN_TEXT_SPLIT_INFO);
         this.documentInfoChangeSupport = new PropertyChangeSupport(this);
+        // 初始化时从MongoDB加载所有文档信息
+        documentInfoRepository.findAll().forEach(info -> {
+            documentInfos.put(info.getDocInfoId(), info);
+            documentSuppliers.put(info.getDocInfoId(), createLazySupplier(info.getDocumentPath()));
+        });
     }
 
     public VectorStoreDocumentInfo putNewDocument(String documentFileName, List<Document> uploadedDocumentItems) {
@@ -68,9 +81,42 @@ public class VectorStoreDocumentService {
                 .map(i -> copyNewDocument(docInfoId, i, uploadedDocumentItems.get(i))).toList();
         VectorStoreDocumentInfo vectorStoreDocumentInfo =
                 new VectorStoreDocumentInfo(docInfoId, uploadedDocumentFile.getName(), createTimestamp, createTimestamp,
-                        uploadedDocumentFile.getPath(), () -> documentList);
+                        uploadedDocumentFile.getPath());
         this.documentInfos.put(docInfoId, vectorStoreDocumentInfo);
+        documentSuppliers.put(docInfoId, () -> documentList);
+        documentInfoRepository.save(vectorStoreDocumentInfo);
+        documentInfoChangeSupport.firePropertyChange(DOCUMENT_ADDING_EVENT, null, List.of(vectorStoreDocumentInfo));
         return vectorStoreDocumentInfo;
+    }
+
+    // 新增懒加载方法
+    private Supplier<List<Document>> createLazySupplier(String documentPath) {
+        return new Supplier<>() {
+            private volatile List<Document> cachedDocuments = null;
+
+            @Override
+            public List<Document> get() {
+                if (cachedDocuments == null) {
+                    synchronized (this) {
+                        if (cachedDocuments == null) {
+                            try {
+                                File documentFile = new File(documentPath);
+                                if (documentFile.exists()) {
+                                    Resource resource = new FileSystemResource(documentFile);
+                                    cachedDocuments = split(resource);
+                                } else {
+                                    cachedDocuments = Collections.emptyList();
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                cachedDocuments = Collections.emptyList();
+                            }
+                        }
+                    }
+                }
+                return cachedDocuments;
+            }
+        };
     }
 
     private Document copyNewDocument(String docInfoId, Integer index, Document uploadedDocument) {
@@ -116,23 +162,43 @@ public class VectorStoreDocumentService {
         Files.deleteIfExists(new File(uploadDir, fileName).toPath());
     }
 
-    public DataSize getMaxUploadSize() {
-        return maxUploadSize;
-    }
-
     public VectorStoreDocumentInfo updateDocumentInfo(VectorStoreDocumentInfo vectorStoreDocumentInfo, String title) {
-        VectorStoreDocumentInfo updateVectorStoreDocumentInfo = vectorStoreDocumentInfo.newTitle(title);
-        this.documentInfos.put(vectorStoreDocumentInfo.docInfoId(), updateVectorStoreDocumentInfo);
-        return updateVectorStoreDocumentInfo;
+        VectorStoreDocumentInfo updatedInfo = vectorStoreDocumentInfo.newTitle(title);
+        documentInfos.put(updatedInfo.getDocInfoId(), updatedInfo);
+        documentInfoRepository.save(updatedInfo);
+
+        documentInfoChangeSupport.firePropertyChange(DOCUMENT_ADDING_EVENT, List.of(vectorStoreDocumentInfo), List.of(updatedInfo));
+
+        return updatedInfo;
     }
 
     public void deleteDocumentInfo(String docId) {
-        this.documentInfos.remove(docId);
+        VectorStoreDocumentInfo removed = documentInfos.remove(docId);
+        documentSuppliers.remove(docId);
+        documentInfoRepository.deleteById(docId);
+
+        documentInfoChangeSupport.firePropertyChange(DOCUMENTS_DELETE_EVENT, removed, null);
     }
 
     public List<VectorStoreDocumentInfo> getDocumentList() {
-        return this.documentInfos.values().stream()
-                .sorted(Comparator.comparingLong(VectorStoreDocumentInfo::updateTimestamp).reversed()).toList();
+        reloadFromDatabase();
+        return documentInfos.values().stream()
+                .sorted(Comparator.comparingLong(VectorStoreDocumentInfo::getUpdateTimestamp).reversed())
+                .toList();
+    }
+
+    private synchronized void reloadFromDatabase() {
+        // 清空再重新加载
+        documentInfos.clear();
+        documentSuppliers.clear();
+        documentInfoRepository.findAll().forEach(info -> {
+            documentInfos.put(info.getDocInfoId(), info);
+            documentSuppliers.put(info.getDocInfoId(), createLazySupplier(info.getDocumentPath()));
+        });
+    }
+
+    public Supplier<List<Document>> getDocumentSupplier(String docInfoId) {
+        return documentSuppliers.get(docInfoId);
     }
 
 }

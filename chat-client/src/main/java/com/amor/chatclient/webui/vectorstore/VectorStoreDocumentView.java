@@ -56,9 +56,9 @@ public class VectorStoreDocumentView extends VerticalLayout {
             HorizontalLayout row = new HorizontalLayout();
             row.setAlignItems(Alignment.CENTER);
 
-            Span title = new Span(chatHistory.title());
+            Span title = new Span(chatHistory.getTitle());
             title.getElement()
-                    .setAttribute("title", LocalDateTime.ofInstant(Instant.ofEpochMilli(chatHistory.createTimestamp()),
+                    .setAttribute("title", LocalDateTime.ofInstant(Instant.ofEpochMilli(chatHistory.getCreateTimestamp()),
                             ZoneId.systemDefault()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             row.add(title);
             title.getStyle().set("white-space", "nowrap");
@@ -71,6 +71,7 @@ public class VectorStoreDocumentView extends VerticalLayout {
                 .ifPresent(documentInfos -> vectorStoreDocumentService.getDocumentInfoChangeSupport()
                         .firePropertyChange(DOCUMENT_SELECTING_EVENT, event.getOldValue(), documentInfos)));
         add(initDocumentViewHeader(), this.documentListBox);
+        updateDocumentContent();
     }
 
     private Header initDocumentViewHeader() {
@@ -101,9 +102,9 @@ public class VectorStoreDocumentView extends VerticalLayout {
         if (selectedItems.isEmpty())
             return;
         VectorStoreDocumentInfo documentInfo =
-                selectedItems.stream().sorted(Comparator.comparingLong(VectorStoreDocumentInfo::updateTimestamp))
+                selectedItems.stream().sorted(Comparator.comparingLong(VectorStoreDocumentInfo::getUpdateTimestamp))
                         .toList().getFirst();
-        Dialog dialog = VaadinUtils.headerDialog("Rename: " + documentInfo.title());
+        Dialog dialog = VaadinUtils.headerDialog("Rename: " + documentInfo.getTitle());
         dialog.setModal(true);
         dialog.setResizable(true);
         dialog.addThemeVariants(DialogVariant.LUMO_NO_PADDING);
@@ -114,7 +115,7 @@ public class VectorStoreDocumentView extends VerticalLayout {
 
         TextField titleTextField = new TextField();
         titleTextField.setWidthFull();
-        titleTextField.setValue(documentInfo.title());
+        titleTextField.setValue(documentInfo.getTitle());
         titleTextField.addFocusListener(event -> titleTextField.getElement().executeJs("this.inputElement.select();"));
         dialogLayout.add(titleTextField);
 
@@ -137,17 +138,21 @@ public class VectorStoreDocumentView extends VerticalLayout {
             return;
 
         String headerTitle = String.format("Delete: %s%s (%d chunks)",
-                selectedItems.stream().map(VectorStoreDocumentInfo::title).findFirst().orElse(""),
+                selectedItems.stream().map(VectorStoreDocumentInfo::getTitle).findFirst().orElse(""),
                 selectedItems.size() > 1 ? String.format(" %d more", selectedItems.size() - 1) : "",
-                selectedItems.stream().map(VectorStoreDocumentInfo::documentListSupplier).map(Supplier::get)
-                        .mapToInt(List::size).sum());
+                selectedItems.stream()
+                        .mapToInt(docInfo -> {
+                            Supplier<List<Document>> supplier = vectorStoreDocumentService.getDocumentSupplier(docInfo.getDocInfoId());
+                            return supplier == null ? 0 : supplier.get().size();
+                        })
+                        .sum());
         Dialog dialog = VaadinUtils.headerDialog(headerTitle);
         dialog.setModal(true);
         dialog.add("Are you sure you want to delete this permanently?");
 
         Button deleteButton = new Button("Delete", e -> {
             for (VectorStoreDocumentInfo documentInfo : selectedItems)
-                this.vectorStoreDocumentService.deleteDocumentInfo(documentInfo.docInfoId());
+                this.vectorStoreDocumentService.deleteDocumentInfo(documentInfo.getDocInfoId());
             this.updateDocumentContent();
             vectorStoreDocumentService.getDocumentInfoChangeSupport()
                     .firePropertyChange(DOCUMENTS_DELETE_EVENT, null, selectedItems);

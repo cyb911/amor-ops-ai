@@ -37,10 +37,13 @@ public class ChatHistoryService {
         String title = chatHistory.getTitle();
         chatHistory.setUpdateTimestamp(System.currentTimeMillis());
         ChatHistory chatHistoryOld = chatHistoryRepository.getChatHistoryEntitiesByTitle(title);
-        if(chatHistoryOld == null){
+        if(chatHistoryOld == null && StrUtil.isNotBlank(title)) {
             ChatHistoryEntity entity = toEntity(chatHistory);
             chatHistoryRepository.save(entity);
         } else {
+            if(chatHistoryOld == null) {
+                return;
+            }
             ChatHistoryEntity entity = toEntity(chatHistoryOld);
             entity.setTitle(chatHistory.getTitle());
             entity.setChatOptions(chatHistory.getChatOptions());

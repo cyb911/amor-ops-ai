@@ -79,7 +79,7 @@ public class ChatHistoryView extends VerticalLayout {
     }
 
     private Header initChatHistoryHeader() {
-        Span appName = new Span("History");
+        Span appName = new Span("历史会话");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
 
         MenuBar menuBar = new MenuBar();

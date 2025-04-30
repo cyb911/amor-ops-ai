@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.amor</groupId>
-    <artifactId>ww-ai</artifactId>
+    <artifactId>amor-ops-ai</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>ww-ai</name>
     <packaging>pom</packaging>

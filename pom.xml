@@ -19,12 +19,14 @@
         <module>chat-client</module>
         <module>mcp-service</module>
         <module>common-core</module>
+        <module>system</module>
     </modules>
 
     <properties>
         <java.version>21</java.version>
         <spring-ai.version>1.0.0-M7</spring-ai.version>
         <vaadin.version>24.6.5</vaadin.version>
+        <spring-cloud.version>2024.0.0</spring-cloud.version>
     </properties>
     <dependencies>
         <dependency>

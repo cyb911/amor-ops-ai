@@ -1,6 +1,6 @@
 package com.amor.chatclient.webui.vectorstore;
 
-import com.amor.chatclient.service.vectorstore.VectorStoreDocumentInfo;
+import com.amor.chatclient.po.VectorStoreDocumentInfo;
 import com.amor.chatclient.service.vectorstore.VectorStoreDocumentService;
 import com.amor.chatclient.service.vectorstore.VectorStoreService;
 import com.amor.chatclient.webui.VaadinUtils;

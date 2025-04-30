@@ -1,6 +1,6 @@
 package com.amor.chatclient.webui.vectorstore;
 
-import com.amor.chatclient.service.vectorstore.VectorStoreDocumentInfo;
+import com.amor.chatclient.po.VectorStoreDocumentInfo;
 import com.amor.chatclient.service.vectorstore.VectorStoreDocumentService;
 import com.amor.chatclient.webui.VaadinUtils;
 import com.vaadin.flow.component.button.Button;
@@ -19,6 +19,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 
 import java.time.Instant;
@@ -33,6 +34,7 @@ import static com.amor.chatclient.service.vectorstore.VectorStoreDocumentService
 /**
  * 文件管理视图类，用于展示和管理向量存储中的文档信息。
  */
+@Slf4j
 public class VectorStoreDocumentView extends VerticalLayout {
 
     private final VectorStoreDocumentService vectorStoreDocumentService;
@@ -151,8 +153,14 @@ public class VectorStoreDocumentView extends VerticalLayout {
         dialog.add("Are you sure you want to delete this permanently?");
 
         Button deleteButton = new Button("Delete", e -> {
-            for (VectorStoreDocumentInfo documentInfo : selectedItems)
+            for (VectorStoreDocumentInfo documentInfo : selectedItems) {
                 this.vectorStoreDocumentService.deleteDocumentInfo(documentInfo.getDocInfoId());
+                try {
+                    this.vectorStoreDocumentService.removeUploadedDocumentFileByPath(documentInfo.getDocumentPath());
+                } catch (Exception e1) {
+                    log.error(e1.getMessage(), e1);
+                }
+            }
             this.updateDocumentContent();
             vectorStoreDocumentService.getDocumentInfoChangeSupport()
                     .firePropertyChange(DOCUMENTS_DELETE_EVENT, null, selectedItems);

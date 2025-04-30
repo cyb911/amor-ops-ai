@@ -24,7 +24,7 @@ public class VectorStoreDocumentUpload extends VerticalLayout {
         this.vectorStoreDocumentService = vectorStoreDocumentService;
         this.uploadedFileNames = new ArrayList<>();
         Paragraph hint = new Paragraph(
-                "Please upload a single PDF, DOC/DOCX, or PPT/PPTX file with a maximum size of " +
+                "请上传 PDF, DOC/DOCX, or PPT/PPTX 文件， 最大上传 " +
                         this.vectorStoreDocumentService.getMaxUploadSize().toMegabytes() + "MB");
         hint.getStyle().set("color", "var(--lumo-secondary-text-color)");
         add(hint);
@@ -47,8 +47,7 @@ public class VectorStoreDocumentUpload extends VerticalLayout {
         UploadExamplesI18N i18n = new UploadExamplesI18N();
         i18n.getAddFiles().setOne("Upload Document...");
         i18n.getDropFiles().setOne("Drop document here");
-        i18n.getError().setIncorrectFileType(
-                "The provided file does not have the correct format.");
+        i18n.getError().setIncorrectFileType("提供的文件格式不正确。");
         upload.setI18n(i18n);
 
         upload.addSucceededListener(succeededEvent -> {

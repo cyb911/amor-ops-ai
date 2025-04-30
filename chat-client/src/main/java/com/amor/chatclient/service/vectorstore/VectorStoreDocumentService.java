@@ -1,5 +1,6 @@
 package com.amor.chatclient.service.vectorstore;
 
+import com.amor.chatclient.po.VectorStoreDocumentInfo;
 import com.amor.chatclient.repository.VectorStoreDocumentInfoRepository;
 import com.amor.chatclient.webui.vectorstore.VectorStoreView;
 import com.vaadin.flow.component.notification.Notification;
@@ -9,6 +10,9 @@ import org.springframework.ai.document.DocumentReader;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TextSplitter;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
+import org.springframework.ai.vectorstore.filter.Filter;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
+import org.springframework.ai.vectorstore.mongodb.atlas.MongoDBAtlasVectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -57,7 +61,10 @@ public class VectorStoreDocumentService {
 
     private final VectorStoreDocumentInfoRepository documentInfoRepository;
 
-    public VectorStoreDocumentService(VectorStoreDocumentInfoRepository documentInfoRepository, @Value("${spring.servlet.multipart.max-file-size}") DataSize maxUploadSize) {
+    private final MongoDBAtlasVectorStore vectorStore;
+
+    public VectorStoreDocumentService(MongoDBAtlasVectorStore vectorStore, VectorStoreDocumentInfoRepository documentInfoRepository,
+                                      @Value("${spring.servlet.multipart.max-file-size}") DataSize maxUploadSize) {
         this.documentInfoRepository = documentInfoRepository;
         this.uploadDir = new File(System.getProperty("user.home"), "amor/vectorstore");
         if (!uploadDir.exists())
@@ -66,6 +73,7 @@ public class VectorStoreDocumentService {
         this.splitters = new WeakHashMap<>();
         this.defaultTokenTextSplitter = newTokenTextSplitter(DEFAULT_TOKEN_TEXT_SPLIT_INFO);
         this.documentInfoChangeSupport = new PropertyChangeSupport(this);
+        this.vectorStore = vectorStore;
         // 初始化时从MongoDB加载所有文档信息
         documentInfoRepository.findAll().forEach(info -> {
             documentInfos.put(info.getDocInfoId(), info);
@@ -152,15 +160,21 @@ public class VectorStoreDocumentService {
 
     public void addUploadedDocumentFile(String fileName, File uploadedFile) throws Exception {
         File file = new File(uploadDir, fileName);
-        if (file.exists())
-            throw new FileAlreadyExistsException("Already Exists - " + file.getAbsolutePath());
+        if (file.exists()) {
+            throw new FileAlreadyExistsException("文件已存在 - " + file.getAbsolutePath());
+        }
         Files.copy(uploadedFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        Notification.show("File uploaded successfully to: " + fileName);
+        Notification.show("文件上传成功: " + fileName);
     }
 
     public void removeUploadedDocumentFile(String fileName) throws IOException {
         Files.deleteIfExists(new File(uploadDir, fileName).toPath());
     }
+
+    public void removeUploadedDocumentFileByPath(String path) throws IOException {
+        Files.deleteIfExists(new File(path).toPath());
+    }
+
 
     public VectorStoreDocumentInfo updateDocumentInfo(VectorStoreDocumentInfo vectorStoreDocumentInfo, String title) {
         VectorStoreDocumentInfo updatedInfo = vectorStoreDocumentInfo.newTitle(title);
@@ -176,7 +190,10 @@ public class VectorStoreDocumentService {
         VectorStoreDocumentInfo removed = documentInfos.remove(docId);
         documentSuppliers.remove(docId);
         documentInfoRepository.deleteById(docId);
+        FilterExpressionBuilder filterExpressionBuilder = new FilterExpressionBuilder();
 
+        Filter.Expression build = filterExpressionBuilder.eq("docInfoId", docId).build();
+        vectorStore.delete(build);
         documentInfoChangeSupport.firePropertyChange(DOCUMENTS_DELETE_EVENT, removed, null);
     }
 

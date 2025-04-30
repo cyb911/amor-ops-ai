@@ -1,4 +1,4 @@
-package com.amor.chatclient.service.vectorstore;
+package com.amor.chatclient.po;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

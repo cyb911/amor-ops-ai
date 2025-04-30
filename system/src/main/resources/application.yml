@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: mcp-service
+    name: system
   data:
     mongodb:
       uri: mongodb://amor:123456@localhost:27017/amor

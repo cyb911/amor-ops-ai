@@ -7,7 +7,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>system</artifactId>
-    <name>Archetype - system</name>
+    <name>system</name>
     <url>http://maven.apache.org</url>
 
     <dependencies>

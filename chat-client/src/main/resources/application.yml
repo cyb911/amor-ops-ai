@@ -6,7 +6,7 @@ vaadin:
 
 spring:
   application:
-    name: ww-ai
+    name: chat-client
   servlet:
     multipart:
       max-file-size: 10MB
@@ -44,6 +44,8 @@ spring:
             #amor MCP服务
             amor:
               url: http://localhost:8090
+            amap:
+              url: https://mcp.amap.com/sse?key=002f46f2d8317f84ec636af7cecbe99e
     playground:
       chat:
         models:

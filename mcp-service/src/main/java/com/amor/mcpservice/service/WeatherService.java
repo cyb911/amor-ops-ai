@@ -18,7 +18,7 @@ public class WeatherService implements ToolService {
 
     private final WeatherFeign weatherFeign;
 
-    @Tool(description = "根据地区id(LocationID)获取实时天气预报")
+    @Tool(description = "根据地区id(LocationID)获取实时天气预报（查询天气时使用）")
     public String weatherNow(@ToolParam(description = "地区Id(LocationID)") String locationId) {
         String urlString = baseUrl + "/v7/weather/now?location=" + locationId + "&key=" + apiKey;
         try {
@@ -33,7 +33,7 @@ public class WeatherService implements ToolService {
         return "无法获取数据！";
     }
 
-    @Tool(description = "城市搜索、位置信息搜索")
+    @Tool(description = "城市搜索、位置信息搜索（查询天气时使用）")
     public GeoResult lookUpCity(@ToolParam(description = "查询地区的名称，支持文字、以英文逗号分隔的经度,纬度坐标（十进制，最多支持小数点后两位）、LocationID或Adcode（仅限中国城市）") String location) {
         try {
             return weatherFeign.lookup(location);

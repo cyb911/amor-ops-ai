@@ -1,7 +1,7 @@
 package com.amor.chatclient.service.chat;
 
 import com.amor.chatclient.po.MessageEntity;
-import com.amor.chatclient.repository.ChatMemoryRepository;
+import com.amor.chatclient.repository.MongoDbChatMemoryRepository;
 import com.amor.chatclient.utils.MessageConverter;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 
 public class MonogoDbChatMemory implements ChatMemory {
 
-    private final ChatMemoryRepository chatMemoryRepository;
+    private final MongoDbChatMemoryRepository chatMemoryRepository;
 
-    public MonogoDbChatMemory(ChatMemoryRepository chatMemoryRepository) {
+    public MonogoDbChatMemory(MongoDbChatMemoryRepository chatMemoryRepository) {
         this.chatMemoryRepository = chatMemoryRepository;
     }
 

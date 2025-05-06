@@ -24,7 +24,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <spring-ai.version>1.0.0-M7</spring-ai.version>
+        <spring-ai.version>1.0.0-M8</spring-ai.version>
         <vaadin.version>24.6.5</vaadin.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
     </properties>

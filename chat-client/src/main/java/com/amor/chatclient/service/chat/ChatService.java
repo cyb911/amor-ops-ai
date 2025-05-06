@@ -2,10 +2,12 @@ package com.amor.chatclient.service.chat;
 
 
 import com.amor.chatclient.WwAiOptions;
+import com.amor.chatclient.advisor.WeatherIntentCallAroundAdvisor;
 import lombok.Getter;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -50,7 +52,9 @@ public class ChatService {
 
     private final VectorStore vectorStore;
 
-    public ChatService(ChatModel chatModel, ChatClient.Builder chatClientBuilder,
+    private final ChatClient.Builder intentBuilder;
+
+    public ChatService(ChatModel chatModel, ChatClient.Builder chatClientBuilder,ChatClient.Builder intentBuilder,
                        WwAiOptions wwAiOptions, List<Advisor> advisors, ChatMemory chatMemory,
                        ToolCallbackProvider tools,VectorStore vectorStore) {
         this.systemPrompt = wwAiOptions.chat().systemPrompt();
@@ -65,6 +69,8 @@ public class ChatService {
         this.completeResponseConsumers = new ArrayList<>();
         this.tools = tools;
         this.vectorStore = vectorStore;
+        this.intentBuilder = intentBuilder;
+
     }
 
     public ChatService registerCompleteResponseConsumer(Consumer<ChatHistory> completeResponseConsumer) {
@@ -87,6 +93,10 @@ public class ChatService {
             } else {
                 advisors.set(0, messageChatMemoryAdvisor);
             }
+            ChatClient intentChatClient =
+                    this.intentBuilder.clone().build();
+            advisors.add(new WeatherIntentCallAroundAdvisor(intentChatClient));
+            advisors.add(new SimpleLoggerAdvisor());
             advisors.add(new QuestionAnswerAdvisor(vectorStore, SearchRequest.builder()
                     .similarityThreshold(0.8).topK(2).build(),"回答时请直接切入主题，不要使用“根据上下文信息”、“根据资料”等措辞"));
             ChatClient.Builder chatClientBuilder =

@@ -16,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import lombok.Getter;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
@@ -141,6 +142,7 @@ public class ChatContentView  extends VerticalLayout {
         private final CompletableFuture<ZoneId> zoneIdFuture;
         private Supplier<List<Message>> messagesSupplier;
         private VerticalLayout messageListLayout;
+        @Getter
         private long startTimestamp;
         private long responseTimestamp;
         private MarkdownMessage botResponse;
@@ -300,8 +302,5 @@ public class ChatContentView  extends VerticalLayout {
             return THINK_PROCESS + String.format(" (%.1f sec)", tookMillis.floatValue() / 1000);
         }
 
-        public long getStartTimestamp() {
-            return this.startTimestamp;
-        }
     }
 }

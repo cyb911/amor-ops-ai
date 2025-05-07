@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class SysTokenService implements ToolService {
+public class SysTokenService {
 
     private final SysTokenRepository sysTokenRepository;
     /**

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
  * 第三方开发接口对接信息维护
  */
 @Service
-public class OpenApiService implements ToolService {
+public class OpenApiService {
 
 }

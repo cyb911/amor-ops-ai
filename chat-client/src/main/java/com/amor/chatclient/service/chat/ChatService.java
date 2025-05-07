@@ -100,7 +100,7 @@ public class ChatService {
             advisors.add(new QuestionAnswerAdvisor(vectorStore, SearchRequest.builder()
                     .similarityThreshold(0.8).topK(2).build(),"回答时请直接切入主题，不要使用“根据上下文信息”、“根据资料”等措辞"));
             ChatClient.Builder chatClientBuilder =
-                    this.chatClientBuilder.clone().defaultTools(tools)
+                    this.chatClientBuilder.clone().defaultToolCallbacks(tools)
                             .defaultAdvisors(advisors)
                             .defaultOptions(chatHistory.getChatOptions());
             Optional.ofNullable(systemPrompt).filter(Predicate.not(String::isBlank))
